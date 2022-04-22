@@ -95,7 +95,7 @@ def send_email(email, name, charset, sender, subject, body_text, body_html):
         }
 
 
-def lambda_handler(event):
+def lambda_handler(event, context):
     logger.info("Received event")
 
     env_vars = get_env_vars()

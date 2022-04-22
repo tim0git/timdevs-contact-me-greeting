@@ -77,14 +77,14 @@ def set_up_email_client(email_address):
 @mock_ses
 def test_returns_status_code_200_if_successful(apigw_event):
     set_up_email_client(verified_email)
-    res = app.lambda_handler(apigw_event)
+    res = app.lambda_handler(apigw_event, "")
     assert res['statusCode'] == 200
 
 
 @mock_ses
 def test_returns_message_id_if_successful(apigw_event):
     set_up_email_client(verified_email)
-    res = app.lambda_handler(apigw_event)
+    res = app.lambda_handler(apigw_event, "")
     body = json.loads(res["body"])
     assert isinstance(body['messageId'], str)
 
@@ -92,7 +92,7 @@ def test_returns_message_id_if_successful(apigw_event):
 @mock_ses
 def test_ses_attempts_delivery_if_successful(apigw_event):
     client = set_up_email_client(verified_email)
-    app.lambda_handler(apigw_event)
+    app.lambda_handler(apigw_event, "")
     response = client.get_send_statistics()
     send_data_points = response['SendDataPoints']
     assert send_data_points[0]["DeliveryAttempts"] == 1
@@ -102,14 +102,14 @@ def test_ses_attempts_delivery_if_successful(apigw_event):
 @mock_ses
 def test_returns_status_code_500_if_unsuccessful(apigw_event):
     set_up_email_client(unverified_email)
-    res = app.lambda_handler(apigw_event)
+    res = app.lambda_handler(apigw_event, "")
     assert res['statusCode'] == 500
 
 
 @mock_ses
 def test_returns_error_message_if_unsuccessful(apigw_event):
     set_up_email_client(unverified_email)
-    res = app.lambda_handler(apigw_event)
+    res = app.lambda_handler(apigw_event, "")
     body = json.loads(res["body"])
     assert body["message"] == "error"
 
@@ -117,7 +117,7 @@ def test_returns_error_message_if_unsuccessful(apigw_event):
 @mock_ses
 def test_ses_does_not_attempt_delivery_if_from_email_is_not_verified(apigw_event):
     client = set_up_email_client(unverified_email)
-    app.lambda_handler(apigw_event)
+    app.lambda_handler(apigw_event, "")
     response = client.get_send_statistics()
     send_data_points = response['SendDataPoints']
     assert send_data_points[0]["DeliveryAttempts"] == 0
@@ -133,7 +133,7 @@ sending_test_email_log = ('root', 'INFO', 'Sending email to Name: test at addres
 @log_capture(level=logging.INFO)
 def test_logs_info_request_and_success(capture, apigw_event):
     set_up_email_client(verified_email)
-    res = app.lambda_handler(apigw_event)
+    res = app.lambda_handler(apigw_event, "")
     body = json.loads(res["body"])
 
     capture.check(
@@ -148,7 +148,7 @@ def test_logs_info_request_and_success(capture, apigw_event):
 @log_capture(level=logging.INFO)
 def test_logs_info_request_and_error_when_sender_email_is_unverified(capture, apigw_event):
     set_up_email_client(unverified_email)
-    app.lambda_handler(apigw_event)
+    app.lambda_handler(apigw_event, "")
 
     capture.check(
         credential_log,
