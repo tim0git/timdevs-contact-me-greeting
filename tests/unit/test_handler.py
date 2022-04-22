@@ -61,15 +61,26 @@ unverified_email = 'sender@unverifiedemail.com'
 
 os.environ['SENDER'] = 'Sender Name <{}>'.format(verified_email)
 os.environ['AWS_REGION'] = 'eu-west-1'
-os.environ['CHARSET'] = 'UTF-8'
+os.environ['TEMPLATE_NAME'] = 'MyTestTemplate'
 
 
-def set_up_email_client(email_address):
+def set_up_email_client(email_address, add_email_template_to_ses=True):
     client = boto3.client("ses", region_name=os.environ['AWS_REGION'])
 
     client.verify_email_address(
         EmailAddress=email_address
     )
+
+    if add_email_template_to_ses:
+        client.create_template(
+            Template={
+                'TemplateName': os.environ['TEMPLATE_NAME'],
+                'SubjectPart': 'string',
+                'TextPart': 'string',
+                'HtmlPart': 'string'
+            }
+        )
+
     return client
 
 
@@ -155,4 +166,19 @@ def test_logs_info_request_and_error_when_sender_email_is_unverified(capture, ap
         event_received_log,
         sending_test_email_log,
         ('root', 'ERROR', 'Email address not verified Sender Name <{}>'.format(verified_email)),
+    )
+
+
+@mock_ses
+@log_capture(level=logging.INFO)
+def test_logs_info_request_and_error_when_template_is_not_found(capture, apigw_event):
+    set_up_email_client(verified_email, False)
+
+    app.lambda_handler(apigw_event, "")
+
+    capture.check(
+        credential_log,
+        event_received_log,
+        sending_test_email_log,
+        ('root', 'ERROR', 'Template ({}) does not exist'.format(os.environ['TEMPLATE_NAME'])),
     )
