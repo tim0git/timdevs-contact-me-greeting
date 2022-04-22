@@ -6,6 +6,10 @@ import pytest
 import app
 from testfixtures import log_capture
 import logging
+from aws_xray_sdk import global_sdk_config
+
+# disable xray for testing purposes
+global_sdk_config.set_sdk_enabled(False)
 
 
 @pytest.fixture()

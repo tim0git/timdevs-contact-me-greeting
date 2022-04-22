@@ -3,21 +3,25 @@ import logging
 import os
 import boto3
 from botocore.exceptions import ClientError
+from aws_xray_sdk.core import xray_recorder
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+@xray_recorder.capture("get_name_from_dynamodb")
 def get_name_from_dynamodb(event):
     name = event["Records"][0]["dynamodb"]["NewImage"]["Name"]["S"]
     return name
 
 
+@xray_recorder.capture("get_email_from_dynamodb")
 def get_email_from_dynamodb(event):
     email = event["Records"][0]["dynamodb"]["NewImage"]["Email"]["S"]
     return email
 
 
+@xray_recorder.capture("send_email")
 def send_email(email, name):
     client = boto3.client('ses', region_name=os.environ.get('AWS_REGION'))
     logger.info("Sending email to Name: " + name + " " + "at address Email: " + email)
