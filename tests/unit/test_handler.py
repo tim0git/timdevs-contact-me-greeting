@@ -66,6 +66,7 @@ unverified_email = 'sender@unverifiedemail.com'
 os.environ['SENDER'] = 'Sender Name <{}>'.format(verified_email)
 os.environ['AWS_REGION'] = 'eu-west-1'
 os.environ['TEMPLATE_NAME'] = 'MyTestTemplate'
+os.environ['REPLY_TO_ADDRESS'] = 'test_reply@example.com'
 
 
 def set_up_email_client(email_address, add_email_template_to_ses=True):

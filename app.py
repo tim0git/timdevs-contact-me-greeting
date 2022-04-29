@@ -33,6 +33,9 @@ def send_email(email, name):
                     email,
                 ],
             },
+            ReplyToAddresses=[
+                os.environ.get('REPLY_TO_ADDRESS'),
+            ],
             Template=os.environ.get('TEMPLATE_NAME'),
             TemplateData=json.dumps({
                 "name": name
