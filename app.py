@@ -17,7 +17,6 @@ def get_name_from_dynamodb(event):
 
 @xray_recorder.capture("get_email_from_dynamodb")
 def get_email_from_dynamodb(event):
-    logger.info("Received event" + str(event))
     email = event["Records"][0]["dynamodb"]["NewImage"]["Email"]["S"]
     return email
 
